@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -32,7 +32,7 @@ async function run() {
 
     const coffeesCollection = client.db("coffeeDB").collection('coffees')
 
-    app.get('/coffees', async(req, res)=>{
+    app.get('/coffees', async (req, res) => {
       // const cursor = coffeesCollection.find();
       // const result = await cursor.toArray();
 
@@ -40,16 +40,26 @@ async function run() {
       res.send(result)
     })
 
-    app.post('/coffees', async(req, res)=>{
+    app.get('/coffees/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id : new ObjectId(id)}
+      const result = await coffeesCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.post('/coffees', async (req, res) => {
       const newCoffee = req.body;
       console.log(newCoffee);
       const result = await coffeesCollection.insertOne(newCoffee)
       res.send(result)
     })
 
-
-
-
+    app.delete("/coffees/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await coffeesCollection.deleteOne(query);
+      res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -63,11 +73,11 @@ run().catch(console.dir);
 
 
 
-app.get('/', (req, res)=>{
-    res.send("coffee server in running on ")
+app.get('/', (req, res) => {
+  res.send("coffee server in running on ")
 })
 
-app.listen(port, ()=>{
-    console.log(`coffee store in running on port ${port}`);
-    
+app.listen(port, () => {
+  console.log(`coffee store in running on port ${port}`);
+
 })
